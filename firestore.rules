@@ -1,0 +1,126 @@
+rules_version = '2';
+
+// Single-owner system. Every path is closed unless matched below, and every match
+// requires the owner. Change the UID here and nowhere else.
+function ownerUid() { return 'U8SYctoCDlVkSrhNYO2c033lrcU2'; }
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // "Sign out everywhere" writes settings/security.validAfter (epoch seconds).
+    // Any session that signed in before that moment loses access.
+    function sessionValid() {
+      let sec = /databases/$(database)/documents/settings/security;
+      return !exists(sec) || request.auth.token.auth_time > get(sec).data.validAfter;
+    }
+
+    function isOwner() {
+      return request.auth != null
+        && request.auth.uid == ownerUid()
+        && sessionValid();
+    }
+
+    function isTs(v) { return v is timestamp; }
+    function optString(d, k, max) { return !(k in d) || (d[k] is string && d[k].size() <= max); }
+
+    // settings/security must stay writable with an old session, or signing out
+    // everywhere would lock the device that pressed the button out of re-checking.
+    match /settings/security {
+      allow read: if request.auth != null && request.auth.uid == ownerUid();
+      allow write: if request.auth != null && request.auth.uid == ownerUid()
+        && request.resource.data.keys().hasOnly(['validAfter'])
+        && request.resource.data.validAfter is int;
+    }
+
+    match /settings/{name} {
+      allow read: if isOwner();
+      allow write: if isOwner() && name != 'security';
+    }
+
+    match /libraries/{name} {
+      allow read: if isOwner();
+      allow write: if isOwner()
+        && request.resource.data.keys().hasAll(['items'])
+        && request.resource.data.items is list;
+    }
+
+    // Pricing versions are immutable snapshots: quotes point at them forever.
+    function validVersion(d) {
+      return d.keys().hasAll(['number', 'core', 'sections', 'createdAt'])
+        && d.number is int && d.number > 0
+        && d.core is map
+        && d.core.hourlyRate is int && d.core.hourlyRate >= 0
+        && d.core.vatRate is number && d.core.vatRate >= 0 && d.core.vatRate < 100
+        && d.core.vatRegistered is bool
+        && d.sections is list
+        && isTs(d.createdAt);
+    }
+
+    match /pricingVersions/{id} {
+      allow read: if isOwner();
+      allow create: if isOwner() && validVersion(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /counters/{name} {
+      allow read, write: if isOwner();
+    }
+
+    function validQuote(d) {
+      return d.keys().hasAll(['status', 'title', 'clientId', 'selections', 'pricingVersionId',
+                              'lines', 'totals', 'itemIds', 'createdAt', 'updatedAt'])
+        && d.status is string && d.status.size() > 0
+        && d.title is string && d.title.size() <= 300
+        && (d.clientId == null || d.clientId is string)
+        && d.selections is map
+        && d.pricingVersionId is string
+        && d.lines is list
+        && d.totals is map
+        && d.totals.total is int
+        && d.totals.monthly is int
+        && d.itemIds is list
+        && (d.number == null || d.number is string)
+        && optString(d, 'summary', 5000)
+        && isTs(d.createdAt) && isTs(d.updatedAt);
+    }
+
+    match /quotes/{id} {
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner() && validQuote(request.resource.data);
+
+      match /activity/{entry} {
+        allow read: if isOwner();
+        allow create: if isOwner()
+          && request.resource.data.type is string
+          && isTs(request.resource.data.at);
+        allow update: if false;
+        allow delete: if isOwner();
+      }
+    }
+
+    match /clients/{id} {
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner()
+        && request.resource.data.company is string
+        && request.resource.data.company.size() <= 300
+        && request.resource.data.tags is list
+        && request.resource.data.custom is map;
+
+      match /{sub}/{entry} {
+        allow read, write: if isOwner() && sub in ['notes', 'activity'];
+      }
+    }
+
+    match /files/{id} {
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner()
+        && request.resource.data.name is string
+        && request.resource.data.path is string
+        && request.resource.data.size is int;
+    }
+
+    match /folders/{id} {
+      allow read, write: if isOwner();
+    }
+  }
+}
