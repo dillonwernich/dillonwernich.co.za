@@ -43,19 +43,21 @@ files; delete them and keep `deploy.yml`, which already uses the same secret nam
 
 ## Custom domain
 
-1. Firebase console → Hosting → Add custom domain → `dillonwernich.co.za`. Repeat for
-   `www.dillonwernich.co.za` and choose "Redirect to dillonwernich.co.za".
-2. Firebase shows the records to create. At the registrar's DNS panel:
-   - Add the **TXT** record Firebase gives you on `@` (ownership check).
-   - Replace the existing GitHub Pages **A** records on `@` (`185.199.108.153`,
-     `185.199.109.153`, `185.199.110.153`, `185.199.111.153`) with the A record Firebase gives.
-   - Remove any GitHub Pages **AAAA** records on `@`.
-   - Point `www` at the record Firebase gives (replacing the `CNAME` to
-     `dillonwernich.github.io`).
-3. Wait for Firebase to show the domain as Connected. The SSL certificate is issued
-   automatically and can take up to 24 hours.
-4. Then, in the GitHub repository → Settings → Pages, set the source to "None" to switch GitHub
-   Pages off.
+`dillonwernich.co.za` (and `www`, redirecting to it) are attached to the `dillon-wernich`
+Hosting site. DNS lives at domains.co.za and should hold exactly these records:
+
+| Host | Type | Value |
+|---|---|---|
+| `dillonwernich.co.za` | A | `199.36.158.100` |
+| `dillonwernich.co.za` | TXT | `hosting-site=dillon-wernich` |
+| `www.dillonwernich.co.za` | CNAME | `dillon-wernich.web.app` |
+
+No GitHub Pages records (`185.199.108-111.153`, `dillonwernich.github.io`) and no AAAA records
+on the apex. If Firebase shows "Needs setup", open the domain in Hosting and click Verify; the
+SSL certificate is issued automatically once verification passes.
+
+GitHub Pages can be switched off in the repository's Settings → Pages once the domain shows
+Connected in Firebase.
 
 ## Search Console
 
