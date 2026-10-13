@@ -1,5 +1,5 @@
-// First-run data. Written to Firestore once; from then on everything here is edited in
-// the admin and this file is never read again.
+// First-run data, written to Firestore once and then edited in the admin. The pricing
+// defaults are also read by Pricing → Restore defaults to put back deleted sections.
 
 const h = (amount) => ({ mode: 'hours', amount });
 const r = (rands) => ({ mode: 'fixed', amount: Math.round(rands * 100) });

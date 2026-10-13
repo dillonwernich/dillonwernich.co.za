@@ -138,7 +138,9 @@ svg.i{width:16px;height:16px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-
 .input::placeholder,.textarea::placeholder{color:var(--ink-faint)}
 .input.num{text-align:right}
 .field-err{font-size:var(--fs-sm);color:var(--err)}
-.affix{display:flex;align-items:stretch}
+.affix{display:flex;align-items:stretch;height:var(--control)}
+.affix .input{flex:1 1 auto;min-width:0;height:100%}
+.affix .pre,.affix .post{flex:0 0 auto;white-space:nowrap}
 .affix .pre,.affix .post{display:grid;place-items:center;padding:0 10px;border:1px solid var(--line-strong);
   background:var(--paper-3);color:var(--ink-soft);font-family:var(--mono);font-size:var(--fs-sm)}
 .affix .pre{border-right:0;border-radius:var(--r-sm) 0 0 var(--r-sm)}

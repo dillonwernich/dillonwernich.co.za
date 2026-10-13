@@ -3,6 +3,7 @@ import { money, centsToInput, parseMoney, dateTime, date, percent } from '../lib
 import { state, lib, savePricingVersion, listVersions, getVersion, quotesUsingItem, saveSetting } from '../data/store.js';
 import { KINDS, hasOptions, describePrice, compute, defaultSelections, milestoneAmounts } from '../pricing/engine.js';
 import { renderQuoteDoc } from '../doc/render.js';
+import { seedPricing } from '../data/seed.js';
 import { icon } from '../ui/icons.js';
 import { kebab } from '../ui/blocks.js';
 import { drawer, modal, menu, confirm } from '../ui/overlay.js';
@@ -38,6 +39,7 @@ export default function pricing(view) {
   view.header({
     title: 'Pricing',
     actions: html`<button type="button" class="btn btn-ghost hide-sm" data-act="history">History</button>
+      <button type="button" class="btn btn-ghost hide-sm" data-act="restore-defaults">Restore defaults</button>
       <button type="button" class="btn hide-sm" data-act="add-section">${icon('plus')}Section</button>
       <button type="button" class="btn btn-primary" data-act="save">Save version</button>`,
   });
@@ -52,7 +54,8 @@ export default function pricing(view) {
           <div class="panel-body" data-core></div>
         </section>
         <div data-sections></div>
-        <button type="button" class="btn show-sm" data-act="add-section">${icon('plus')}Add section</button>
+        <div class="btn-row show-sm"><button type="button" class="btn" data-act="add-section">${icon('plus')}Add section</button>
+          <button type="button" class="btn" data-act="restore-defaults">Restore defaults</button></div>
       </div>
       <aside class="pricing-preview">
         <div class="panel">
@@ -103,6 +106,12 @@ export default function pricing(view) {
 
   const drawSections = () => {
     const box = $('[data-sections]');
+    if (!cfg.sections.length) {
+      box.innerHTML = String(html`<div class="panel section-block"><div class="empty"><p>There are no pricing sections.</p>
+        <button type="button" class="btn" data-act="restore-defaults">Restore default sections</button></div></div>`);
+      drawPlaceholder();
+      return;
+    }
     box.innerHTML = String(html`${cfg.sections.map((s) => html`
       <section class="section-block" data-sort-id="${s.id}">
         <div class="section-head">
@@ -466,6 +475,30 @@ export default function pricing(view) {
     toast('Section deleted.', { undo: () => { cfg.sections.splice(index, 0, s); touch(); drawSections(); } });
   }
 
+  // Puts back any default section or item that is missing, matched by id, without
+  // touching anything that is still there. Old quotes keep pointing at the same ids.
+  function restoreDefaults() {
+    const defaults = seedPricing().sections;
+    let added = 0;
+    defaults.forEach((ds, index) => {
+      const existing = findSection(ds.id);
+      if (!existing) {
+        cfg.sections.splice(Math.min(index, cfg.sections.length), 0, clone(ds));
+        added += ds.items.length;
+        return;
+      }
+      ds.items.forEach((it, i) => {
+        if (existing.items.some((x) => x.id === it.id)) return;
+        existing.items.splice(Math.min(i, existing.items.length), 0, clone(it));
+        added += 1;
+      });
+    });
+    if (!added) { toast('Every default section and item is already here.'); return; }
+    touch();
+    drawSections();
+    toast(`Restored ${added} default ${added === 1 ? 'item' : 'items'}. Save version to keep them.`);
+  }
+
   async function history() {
     let versions = [];
     try { versions = await listVersions(30); } catch (e) { toastError(e); return; }
@@ -524,6 +557,7 @@ export default function pricing(view) {
     if (!b) return;
     const act = b.dataset.act || b.dataset.action;
     if (act === 'edit-core') coreDrawer();
+    if (act === 'restore-defaults') restoreDefaults();
     if (act === 'add-section') sectionDrawer();
     if (act === 'add-item') itemDrawer(b.dataset.s);
     if (act === 'edit-item') itemDrawer(b.dataset.s, findItem(b.dataset.s, b.dataset.i));
@@ -570,6 +604,7 @@ export default function pricing(view) {
     if (!b) return;
     if (b.dataset.act === 'save') { if (!dirty) { toast('No changes to save.'); return; } saveDialog(); }
     if (b.dataset.act === 'history') history();
+    if (b.dataset.act === 'restore-defaults') restoreDefaults();
     if (b.dataset.act === 'add-section') sectionDrawer();
   };
   headerEl.addEventListener('click', onHeader);
