@@ -1,0 +1,107 @@
+/* The quote document. Shared by the print route, the saved HTML snapshot and the
+   share-ready page, so it must not depend on admin.css or on the admin theme. */
+
+@page{size:A4;margin:18mm 18mm 20mm}
+
+.qdoc{
+  --d-ink:#15171C;--d-soft:#4E545F;--d-faint:#6E7480;--d-line:#DFE3F2;--d-accent:#2743D9;
+  width:210mm;min-height:297mm;padding:18mm;background:#fff;color:var(--d-ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:10pt;line-height:1.5;-webkit-font-smoothing:antialiased;
+  box-shadow:0 1px 3px rgba(21,23,28,.08),0 8px 24px rgba(21,23,28,.08);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.qdoc *{box-sizing:border-box;margin:0;padding:0}
+.qdoc .mono{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace}
+.qdoc .num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+
+.qd-top{display:grid;grid-template-columns:1fr auto;gap:12mm;align-items:start}
+.qd-from .name{font-weight:700;font-size:15pt;letter-spacing:-.015em;line-height:1.2}
+.qd-from .trading{color:var(--d-soft);margin-top:1mm}
+.qd-from .lines{color:var(--d-soft);margin-top:3mm;white-space:pre-line;font-size:9pt}
+.qd-logo{max-height:16mm;max-width:50mm;display:block;margin-bottom:4mm}
+.qd-meta{text-align:right}
+.qd-meta .kind{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:8pt;letter-spacing:.08em;text-transform:uppercase;color:var(--d-accent)}
+.qd-meta .number{font-weight:700;font-size:15pt;letter-spacing:-.01em;margin-top:1mm}
+.qd-meta dl{display:grid;grid-template-columns:auto auto;gap:1mm 5mm;margin-top:4mm;font-size:9pt;justify-content:end}
+.qd-meta dt{color:var(--d-faint)}
+.qd-meta dd{text-align:right;font-variant-numeric:tabular-nums}
+
+.qd-rule{border:0;border-top:1px solid var(--d-line);margin:8mm 0}
+.qd-to{display:grid;grid-template-columns:1fr 1fr;gap:12mm;font-size:9pt}
+.qd-label{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:7.5pt;letter-spacing:.08em;text-transform:uppercase;color:var(--d-faint);margin-bottom:2mm}
+.qd-to .company{font-weight:600;font-size:10.5pt}
+.qd-to .lines{white-space:pre-line;color:var(--d-soft)}
+
+.qd-title{font-size:18pt;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-top:10mm}
+.qd-summary{margin-top:3mm;color:var(--d-soft);max-width:150mm;white-space:pre-line}
+
+.qd-h{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:8pt;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--d-ink);margin:10mm 0 3mm;break-after:avoid;page-break-after:avoid}
+
+.qd-items{width:100%;border-collapse:collapse}
+.qd-items th{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:7.5pt;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--d-faint);text-align:left;padding:0 0 2mm;border-bottom:1px solid var(--d-ink)}
+.qd-items th.num{text-align:right}
+.qd-items td{padding:2.5mm 0;border-bottom:1px solid var(--d-line);vertical-align:top}
+.qd-items td.num{padding-left:6mm;width:32mm}
+.qd-items tr{break-inside:avoid;page-break-inside:avoid}
+.qd-items .qd-group{break-inside:avoid;page-break-inside:avoid}
+.qd-items .group td{padding-top:5mm;border-bottom:0;font-weight:600;color:var(--d-ink);font-size:9pt}
+.qd-items .qd-group:first-of-type .group td{padding-top:3mm}
+.qd-items .qd-item{font-weight:500}
+.qd-items .qd-detail{color:var(--d-soft);font-size:9pt;margin-top:.5mm}
+
+.qd-totals{margin-left:auto;width:85mm;margin-top:4mm;break-inside:avoid;page-break-inside:avoid}
+.qd-totals .row{display:flex;justify-content:space-between;padding:1.5mm 0;font-size:9.5pt}
+.qd-totals .row .k{color:var(--d-soft)}
+.qd-totals .row.grand{border-top:1px solid var(--d-ink);margin-top:1.5mm;padding-top:3mm;font-weight:700;font-size:12pt}
+.qd-totals .row.grand .v{color:var(--d-accent)}
+.qd-vatnote{font-size:8.5pt;color:var(--d-faint);text-align:right;margin-top:1mm}
+
+.qd-two{display:grid;grid-template-columns:1fr 1fr;gap:10mm}
+.qd-block{break-inside:avoid;page-break-inside:avoid}
+.qd-milestones{width:100%;border-collapse:collapse}
+.qd-milestones td{padding:2mm 0;border-bottom:1px solid var(--d-line)}
+.qd-milestones tr{break-inside:avoid;page-break-inside:avoid}
+.qd-milestones td.pct{width:16mm;padding-right:4mm;text-align:left;color:var(--d-faint)}
+
+.qd-list{list-style:none}
+.qd-list li{position:relative;padding-left:5mm;margin-bottom:1.5mm;break-inside:avoid;page-break-inside:avoid}
+.qd-list li::before{content:"";position:absolute;left:0;top:.62em;width:2.5mm;height:1px;background:var(--d-accent)}
+.qd-scope{display:grid;grid-template-columns:repeat(3,1fr);gap:8mm}
+
+.qd-terms .term{margin-bottom:3mm;break-inside:avoid;page-break-inside:avoid}
+.qd-terms .term h4{font-size:9.5pt;font-weight:600}
+.qd-terms .term p{color:var(--d-soft);font-size:9pt;white-space:pre-line}
+.qd-terms ol{padding-left:0;list-style:none;counter-reset:t}
+.qd-terms ol>li{counter-increment:t;display:grid;grid-template-columns:7mm 1fr}
+.qd-terms ol>li::before{content:counter(t) ".";font-variant-numeric:tabular-nums;color:var(--d-faint);font-size:9pt}
+
+.qd-bank{font-size:9pt}
+.qd-bank dl{display:grid;grid-template-columns:auto 1fr;gap:1mm 5mm}
+.qd-bank dt{color:var(--d-faint)}
+
+.qd-accept{margin-top:12mm;break-inside:avoid;page-break-inside:avoid}
+.qd-accept p{color:var(--d-soft);font-size:9pt;max-width:150mm}
+.qd-sign{display:grid;grid-template-columns:2fr 1.4fr 1fr;gap:8mm;margin-top:14mm}
+.qd-sign div{border-top:1px solid var(--d-ink);padding-top:1.5mm;font-size:8pt;color:var(--d-faint)}
+
+.qd-foot{margin-top:12mm;font-size:8pt;color:var(--d-faint);display:flex;justify-content:space-between;gap:6mm}
+
+@media screen and (max-width:860px){
+  .qdoc{width:100%;min-height:0;padding:20px 16px;box-shadow:none;font-size:13px}
+  .qd-top,.qd-to,.qd-two,.qd-scope{grid-template-columns:1fr;gap:16px}
+  .qd-meta{text-align:left}
+  .qd-meta dl{justify-content:start}
+  .qd-meta dd{text-align:left}
+  .qd-totals{width:100%}
+  .qd-sign{grid-template-columns:1fr;gap:28px}
+}
+
+@media print{
+  html,body{background:#fff!important;min-height:0!important}
+  .sidebar,.topbar,.tabbar,.toasts,.doc-toolbar,.no-print{display:none!important}
+  .shell,.main,.content,.doc-stage{display:block!important;padding:0!important;margin:0!important;background:none!important;min-height:0!important}
+  .qdoc{width:auto;min-height:0;padding:0;box-shadow:none}
+}
