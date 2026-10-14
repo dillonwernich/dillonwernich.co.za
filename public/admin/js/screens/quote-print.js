@@ -9,11 +9,11 @@ async function snapshotHtml(quote, business) {
   const css = await (await fetch('/admin/css/doc.css')).text();
   const origin = location.origin.includes('localhost') || location.origin.includes('127.0.0.1') ? 'https://dillonwernich.co.za' : location.origin;
   const fonts = [
-    ['IBM Plex Sans', 400, 'ibm-plex-sans-latin-400-normal'],
-    ['IBM Plex Sans', 500, 'ibm-plex-sans-latin-500-normal'],
-    ['IBM Plex Sans', 600, 'ibm-plex-sans-latin-600-normal'],
-    ['IBM Plex Sans', 700, 'ibm-plex-sans-latin-700-normal'],
-    ['IBM Plex Mono', 500, 'ibm-plex-mono-latin-500-normal'],
+    ['Geist Sans', 400, 'geist-sans-latin-400-normal'],
+    ['Geist Sans', 500, 'geist-sans-latin-500-normal'],
+    ['Geist Sans', 600, 'geist-sans-latin-600-normal'],
+    ['Geist Sans', 700, 'geist-sans-latin-700-normal'],
+    ['Geist Mono', 500, 'geist-mono-latin-500-normal'],
   ].map(([fam, w, file]) => `@font-face{font-family:"${fam}";font-weight:${w};font-style:normal;font-display:swap;src:url("${origin}/fonts/${file}.woff2") format("woff2")}`).join('\n');
   return `<!DOCTYPE html>
 <html lang="en-ZA"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">

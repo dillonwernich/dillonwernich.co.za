@@ -1,7 +1,7 @@
 import { html, attr } from '../lib/html.js';
-import { money, hours, time, isoDay, toDate, percent, dateTime } from '../lib/format.js';
+import { money, time, isoDay, toDate, percent, dateTime } from '../lib/format.js';
 import { state, lib, getVersion, statusById, roleOf, quoteActivity, logQuote, create, logClient, Timestamp } from '../data/store.js';
-import { isSelected, describePrice } from '../pricing/engine.js';
+import { isSelected, kindOf, cents } from '../pricing/engine.js';
 import { icon } from '../ui/icons.js';
 import { statusBadge, skeletonBlock } from '../ui/blocks.js';
 import { menu, confirm, drawer } from '../ui/overlay.js';
@@ -146,7 +146,10 @@ export default async function quoteBuilder(view) {
             <div class="grid">
               ${f.text('title', 'Title', q.title, { placeholder: 'Website redesign for Mthembu Attorneys' })}
               ${f.textarea('summary', 'Summary', q.summary, { rows: 3, placeholder: 'One paragraph on what the project is and why it matters to the client.' })}
-              <div class="grid g2">${f.date('validUntil', 'Valid until', isoDay(q.validUntil))}</div>
+              <div class="grid g2">
+                ${f.date('validUntil', 'Valid until', isoDay(q.validUntil))}
+                ${f.text('timelineNote', 'Timeline', q.timeline?.note || '', { placeholder: '3 to 4 weeks from the deposit', hint: 'optional' })}
+              </div>
             </div>
             <div class="stack" data-items></div>
           </div>
@@ -158,22 +161,17 @@ export default async function quoteBuilder(view) {
         </section>
 
         <section class="panel b-section">
-          <div class="panel-head"><span class="b-num">04</span><h2>Timeline</h2></div>
-          <div class="panel-body" data-timeline></div>
-        </section>
-
-        <section class="panel b-section">
-          <div class="panel-head"><span class="b-num">05</span><h2>Payment schedule</h2></div>
+          <div class="panel-head"><span class="b-num">04</span><h2>Payment schedule</h2></div>
           <div class="panel-body" data-payment></div>
         </section>
 
         <section class="panel b-section">
-          <div class="panel-head"><span class="b-num">06</span><h2>Terms</h2></div>
+          <div class="panel-head"><span class="b-num">05</span><h2>Terms</h2></div>
           <div class="panel-body" data-terms></div>
         </section>
 
         <section class="panel b-section">
-          <div class="panel-head"><span class="b-num">07</span><h2>Internal</h2><span class="badge">Not on the quote</span></div>
+          <div class="panel-head"><span class="b-num">06</span><h2>Internal notes</h2><span class="badge">Not on the quote</span></div>
           <div class="panel-body" data-internal></div>
         </section>
 
@@ -214,21 +212,20 @@ export default async function quoteBuilder(view) {
 
   const sections = () => [...config.sections].sort(byOrder).filter((s) => s.visible !== false || s.items.some((it) => isSelected(it, q.selections[it.id])));
   const lineFor = (itemId) => (q.lines || []).find((l) => l.itemId === itemId);
-  const fmtPrice = (p) => describePrice(p, config.core.hourlyRate, money);
+  const fmtPrice = (p) => money(cents(p, config.core));
 
   const control = (it) => {
     const sel = q.selections[it.id];
-    switch (it.kind) {
+    switch (kindOf(it)) {
       case 'single-select':
-      case 'complexity':
-      case 'multiplier':
         return html`<div class="chips">${it.options.filter((o) => o.visible !== false || o.id === sel).map((o) => html`
-          <button type="button" class="chip" data-item="${it.id}" data-opt="${o.id}" aria-pressed="${o.id === sel}" title="${it.kind === 'multiplier' ? `× ${o.multiplier ?? 1}` : fmtPrice(o.price)}">${o.label}</button>`)}</div>`;
+          <button type="button" class="chip" data-item="${it.id}" data-opt="${o.id}" aria-pressed="${o.id === sel}" title="${fmtPrice(o.price)}">${o.label}</button>`)}</div>`;
       case 'multi-select':
         return html`<div class="chips">${it.options.filter((o) => o.visible !== false || (sel || []).includes(o.id)).map((o) => html`
           <button type="button" class="chip" data-item="${it.id}" data-opt="${o.id}" aria-pressed="${(sel || []).includes(o.id)}" title="${fmtPrice(o.price)}">${o.label}</button>`)}</div>`;
       case 'quantity': {
-        const variants = it.options.length ? it.options.filter((o) => o.visible !== false || Number(sel?.[o.id]) > 0) : [{ id: '_', label: it.unit ? `${it.unit[0].toUpperCase()}${it.unit.slice(1)}s` : 'Quantity' }];
+        const unit = it.unit ? `${it.unit[0].toUpperCase()}${it.unit.slice(1)}s` : 'Quantity';
+        const variants = it.options.length ? it.options.filter((o) => o.visible !== false || Number(sel?.[o.id]) > 0) : [{ id: '_', label: `${unit} at ${fmtPrice(it.price)}` }];
         return html`<div class="stack-sm">${variants.map((o) => html`<label class="qty-row"><span>${o.label}</span>
           <input class="input num" type="number" min="0" step="1" inputmode="numeric" data-item="${it.id}" data-qty="${o.id}" value="${sel?.[o.id] || ''}" placeholder="0"></label>`)}</div>`;
       }
@@ -251,9 +248,8 @@ export default async function quoteBuilder(view) {
       return a ? `${percent(a.percent)} · ${money(a.amount)}` : '';
     }
     if (!line) return '';
-    if (it.kind === 'multiplier') return line.detail ? `× ${(it.options.find((o) => o.label === line.detail)?.multiplier ?? 1)}` : '';
     if (!line.amount) return line.detail ? `Included · ${line.detail}` : 'Included';
-    return `${money(line.amount)}${line.recurring ? ' per month' : ''}${line.hours ? ` · ${hours(line.hours)}` : ''}`;
+    return `${money(line.amount)}${line.recurring ? ' per month' : ''}${line.kind === 'quantity' && line.detail ? ` · ${line.detail}` : ''}`;
   };
 
   const drawItems = () => {
@@ -264,7 +260,7 @@ export default async function quoteBuilder(view) {
           <div class="item-row" data-row="${it.id}">
             <div>
               <div class="item-label">${it.label}${it.visible === false ? html` <span class="badge">Hidden</span>` : ''}${it.recurring ? html` <span class="badge">Monthly</span>` : ''}</div>
-              ${it.description ? html`<div class="item-desc">${it.description}</div>` : ''}
+              ${it.clientDescription ? html`<div class="item-desc">${it.clientDescription}</div>` : ''}
               <div class="item-price" data-price="${it.id}">${itemPriceText(it)}</div>
             </div>
             <div class="item-ctl">${control(it)}</div>
@@ -296,22 +292,7 @@ export default async function quoteBuilder(view) {
       </div>`)}`);
   };
 
-  // ---------- 04 timeline ----------
-
-  const drawTimeline = () => {
-    const qd = state.settings.quoteDefaults || {};
-    const t = q.timeline || {};
-    $('[data-timeline]').innerHTML = String(html`<div class="grid g2">
-      <div class="field"><span class="label">Estimate</span>
-        <div class="muted" data-est>${hours(q.internal?.hoursOverride || q.totals?.hours)} at ${qd.hoursPerWeek || 20} h a week</div></div>
-      <div class="field"><label class="label" for="f-weeks">Weeks</label>
-        <div class="btn-row"><input class="input num w-xs" id="f-weeks" type="number" min="1" step="1" data-weeks value="${t.weeks}"${attr(!t.override, 'disabled')}>
-        <label class="check"><input type="checkbox" data-weeks-override${attr(t.override, 'checked')}><span>Override</span></label></div></div>
-      ${f.text('timelineNote', 'Note on the quote', t.note || '', { placeholder: 'From receipt of the signed quote and deposit.', cls: 'span2' })}
-    </div>`);
-  };
-
-  // ---------- 05 payment ----------
+  // ---------- 04 payment ----------
 
   const drawPayment = () => {
     const templates = lib('paymentTemplates');
@@ -332,7 +313,7 @@ export default async function quoteBuilder(view) {
     </div>`);
   };
 
-  // ---------- 06 terms ----------
+  // ---------- 05 terms ----------
 
   const drawTerms = () => {
     const library = lib('terms');
@@ -349,31 +330,11 @@ export default async function quoteBuilder(view) {
     <button type="button" class="btn btn-sm" data-act="term-add">${icon('plus')}Add clause for this quote</button>`);
   };
 
-  // ---------- 07 internal ----------
+  // ---------- 06 internal ----------
 
   const drawInternal = () => {
-    $('[data-internal]').innerHTML = String(html`<div class="grid g2">
-      ${f.textarea('internalNotes', 'Notes', q.internal?.notes || '', { rows: 3, cls: 'span2' })}
-      ${f.number('hoursOverride', 'Estimated hours', q.internal?.hoursOverride ?? '', { hint: `calculated ${hours(q.totals?.hours)}`, min: 0, suffix: 'h' })}
-      <div class="field"><span class="label">Readout</span><div data-internal-readout></div></div>
-    </div>`);
-    drawInternalReadout();
-  };
-
-  const effective = () => {
-    const h = Number(q.internal?.hoursOverride) || q.totals?.hours || 0;
-    return h > 0 ? Math.round((q.totals?.subtotal || 0) / h) : 0;
-  };
-
-  const drawInternalReadout = () => {
-    const elm = $('[data-internal-readout]');
-    if (!elm) return;
-    const threshold = Number(state.settings.quoteDefaults?.marginThreshold) || 0;
-    const rate = effective();
-    elm.innerHTML = String(html`<div class="readout">
-      <div>Effective rate <strong class="num">${money(rate)}</strong> an hour</div>
-      <div class="faint">Complexity score ${q.totals?.score || 0}</div>
-      ${threshold && rate && rate < threshold ? html`<div><span class="badge warn">Below your ${money(threshold)} threshold</span></div>` : ''}
+    $('[data-internal]').innerHTML = String(html`<div class="grid">
+      ${f.textarea('internalNotes', 'Notes', q.internal?.notes || '', { rows: 3 })}
     </div>`);
   };
 
@@ -381,29 +342,19 @@ export default async function quoteBuilder(view) {
 
   const drawSummary = () => {
     const t = q.totals || {};
-    const threshold = Number(state.settings.quoteDefaults?.marginThreshold) || 0;
-    const rate = effective();
     const once = (q.lines || []).filter((l) => !l.recurring && l.amount);
     $('[data-side]').innerHTML = String(html`
       <div class="summary">
         <button type="button" class="sheet-bar" data-act="sheet"><span>Total <span data-sheet-state></span></span><span class="num">${money(t.total)}</span></button>
         <div class="summary-head"><div class="eyebrow">Summary</div></div>
         <div class="summary-body">
-          <div class="sum-lines">${once.map((l) => html`<div class="sum-row"><span class="k">${l.label}${l.detail && l.kind !== 'quantity' ? `: ${l.detail}` : ''}</span><span class="num">${money(l.amount)}</span></div>`)}</div>
+          <div class="sum-lines">${once.map((l) => html`<div class="sum-row"><span class="k">${l.kind === 'single-select' && l.detail ? l.detail : l.label}${l.kind === 'quantity' && l.detail ? ` · ${l.detail}` : ''}</span><span class="num">${money(l.amount)}</span></div>`)}</div>
           <div class="sum-sep"></div>
-          <div class="sum-row"><span class="k">Once-off subtotal</span><span class="num">${money(t.base)}</span></div>
+          <div class="sum-row"><span class="k">Subtotal</span><span class="num">${money(t.base)}</span></div>
           ${(q.adjustments || []).map((a) => html`<div class="sum-row"><span class="k">${a.label} (${percent(a.percent)})</span><span class="num">${money(a.amount)}</span></div>`)}
-          ${t.floorApplied ? html`<div class="sum-row sub"><span class="k">Minimum fee applied</span><span class="num">${money(t.floor)}</span></div>` : ''}
           ${t.vatRegistered ? html`<div class="sum-row"><span class="k">VAT (${percent(t.vatRate)})</span><span class="num">${money(t.vat)}</span></div>` : html`<div class="sum-row sub"><span class="k">No VAT charged</span><span></span></div>`}
-          <div class="sum-row total"><span>Once-off total</span><span class="num">${money(t.total)}</span></div>
-          <div class="sum-row"><span class="k">Monthly recurring</span><span class="num">${money(t.monthly)}</span></div>
-          <div class="sum-row"><span class="k">Timeline</span><span class="num">${q.timeline?.weeks || 1} ${q.timeline?.weeks === 1 ? 'week' : 'weeks'}</span></div>
-          <div class="sum-internal">
-            <div class="eyebrow">Internal</div>
-            <div class="sum-row sub"><span class="k">Effective rate</span><span class="num">${money(rate)} / h</span></div>
-            <div class="sum-row sub"><span class="k">Hours</span><span class="num">${hours(Number(q.internal?.hoursOverride) || t.hours)}</span></div>
-            ${threshold && rate && rate < threshold ? html`<div class="badge warn">Below margin threshold</div>` : ''}
-          </div>
+          <div class="sum-row total"><span>Total</span><span class="num">${money(t.total)}</span></div>
+          ${t.monthly ? html`<div class="sum-row"><span class="k">Per month</span><span class="num">${money(t.monthly)}</span></div>` : ''}
         </div>
       </div>`);
     drawSaveState();
@@ -412,15 +363,10 @@ export default async function quoteBuilder(view) {
   // Updates the parts that depend on totals without rebuilding inputs mid-typing.
   const drawDerived = () => {
     refreshItemPrices();
-    const est = $('[data-est]');
-    if (est) est.textContent = `${hours(q.internal?.hoursOverride || q.totals?.hours)} at ${state.settings.quoteDefaults?.hoursPerWeek || 20} h a week`;
-    const weeks = $('[data-weeks]');
-    if (weeks && !q.timeline?.override) weeks.value = q.timeline?.weeks || 1;
     milestonesFor(q).forEach((m, i) => {
       const elm = view.el.querySelector(`[data-ms-amt="${i}"]`);
       if (elm) elm.textContent = money(m.amount);
     });
-    drawInternalReadout();
   };
 
   const drawActivity = async () => {
@@ -511,10 +457,8 @@ export default async function quoteBuilder(view) {
       return;
     }
     if (t.dataset.termBody) { const term = q.terms.find((x) => x.id === t.dataset.termBody); if (term) term.body = t.value; changed({ reprice: false }); return; }
-    if (t.dataset.weeks !== undefined) { q.timeline.weeks = Math.max(1, Number(t.value) || 1); changed(); return; }
-    if (t.name === 'timelineNote') { q.timeline.note = t.value; changed({ reprice: false }); return; }
-    if (t.name === 'internalNotes') { q.internal.notes = t.value; changed({ reprice: false }); return; }
-    if (t.name === 'hoursOverride') { q.internal.hoursOverride = t.value === '' ? null : Number(t.value); changed(); return; }
+    if (t.name === 'timelineNote') { q.timeline = { ...(q.timeline || {}), note: t.value }; changed({ reprice: false }); return; }
+    if (t.name === 'internalNotes') { q.internal = { ...(q.internal || {}), notes: t.value }; changed({ reprice: false }); }
   });
 
   view.el.addEventListener('change', (e) => {
@@ -551,12 +495,6 @@ export default async function quoteBuilder(view) {
       }
       drawTerms();
       changed({ reprice: false });
-      return;
-    }
-    if (t.dataset.weeksOverride !== undefined) {
-      q.timeline.override = t.checked;
-      drawTimeline();
-      changed();
     }
   });
 
@@ -715,7 +653,6 @@ export default async function quoteBuilder(view) {
   drawClient();
   drawItems();
   drawScope();
-  drawTimeline();
   drawPayment();
   drawTerms();
   drawInternal();

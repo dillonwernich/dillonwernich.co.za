@@ -3,7 +3,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-storage.js';
 import { html, attr } from '../lib/html.js';
-import { parseMoney } from '../lib/format.js';
 import { auth, storage } from '../firebase.js';
 import {
   state, lib, saveSetting, formatNumber, LIBRARIES, db, doc, collection, getDocs, writeBatch, setDoc, Timestamp,
@@ -15,6 +14,7 @@ import { toast, toastError } from '../ui/toast.js';
 import { navigate } from '../router.js';
 import { applyTheme } from '../theme.js';
 import { renderLibrary, LIBRARY_DEFS } from './settings-libraries.js';
+import { DEFAULT_LOGO } from '../doc/render.js';
 
 const TABS = [
   { id: 'business', label: 'Business' },
@@ -67,7 +67,8 @@ export default function settings(view) {
         ${f.text('bank.accountType', 'Account type', bank.accountType, { placeholder: 'Business cheque' })}
       </div>`, 'Printed on quotes so clients can pay the deposit.')}
       ${f.group('Logo', html`<div class="btn-row">
-        ${b.logoUrl ? html`<img src="${b.logoUrl}" alt="Current logo" class="logo-preview">` : html`<span class="faint">No logo. Quotes show your name instead.</span>`}
+        <img src="${b.logoUrl || DEFAULT_LOGO}" alt="Current logo" class="logo-preview">
+        ${b.logoUrl ? '' : html`<span class="faint">The site's mark. Upload an image to replace it.</span>`}
         <label class="btn btn-sm">${icon('upload')}Upload<input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden data-logo></label>
         ${b.logoUrl ? html`<button type="button" class="btn btn-sm btn-ghost" data-logo-remove>Remove</button>` : ''}
       </div>`)}
@@ -116,8 +117,6 @@ export default function settings(view) {
       </div>`, 'Numbers are assigned when a quote first leaves Draft and are never reused. The counter restarts each year when the pattern contains the year.')}
       ${f.group('Defaults', html`<div class="grid g2">
         ${f.number('validityDays', 'Validity', qd.validityDays ?? 30, { suffix: 'days', min: 1, step: 1 })}
-        ${f.number('hoursPerWeek', 'Capacity', qd.hoursPerWeek ?? 20, { suffix: 'h a week', min: 1, step: 1, hint: 'for timeline estimates' })}
-        ${f.moneyField('marginThreshold', 'Margin warning below', qd.marginThreshold ?? 45000, { hint: 'effective rate per hour' })}
         ${f.select('defaultPaymentTemplateId', 'Default payment schedule', qd.defaultPaymentTemplateId || '', lib('paymentTemplates').map((t) => ({ value: t.id, label: t.label })))}
         ${f.number('maxUploadMB', 'Maximum upload size', qd.maxUploadMB ?? 25, { suffix: 'MB', min: 1, step: 1, hint: 'enforced by storage rules' })}
       </div>`)}
@@ -136,8 +135,6 @@ export default function settings(view) {
         await saveSetting('quoteDefaults', {
           numberPattern: v.numberPattern,
           validityDays: Math.max(1, Number(v.validityDays) || 30),
-          hoursPerWeek: Math.max(1, Number(v.hoursPerWeek) || 20),
-          marginThreshold: parseMoney(v.marginThreshold),
           defaultPaymentTemplateId: v.defaultPaymentTemplateId || null,
           maxUploadMB: Math.max(1, Number(v.maxUploadMB) || 25),
         });

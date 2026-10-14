@@ -38,11 +38,6 @@ export function parseMoney(input) {
 
 export const centsToInput = (cents) => ((Number(cents) || 0) / 100).toFixed(2).replace('.', ',');
 
-export function hours(h) {
-  const n = Math.round((Number(h) || 0) * 10) / 10;
-  return `${String(n).replace('.', ',')} h`;
-}
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 

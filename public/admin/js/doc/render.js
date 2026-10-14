@@ -5,34 +5,36 @@ import { milestoneAmounts } from '../pricing/engine.js';
 // Renders the client-facing quote. Pure markup from data, so the same output serves the
 // print route, the saved HTML snapshot and a future share link.
 
+// The site's own mark, used until a logo is uploaded under Settings. Absolute so the
+// saved HTML snapshot still shows it when opened from anywhere.
+export const DEFAULT_LOGO = 'https://dillonwernich.co.za/android-chrome-512x512.png';
+
 const nonEmpty = (v) => (Array.isArray(v) ? v.filter((x) => String(x || '').trim()) : []);
 
-function groupLines(lines) {
-  const groups = [];
-  for (const l of lines) {
-    let g = groups.find((x) => x.id === l.sectionId);
-    if (!g) groups.push((g = { id: l.sectionId, name: l.sectionName, lines: [] }));
-    g.lines.push(l);
-  }
-  return groups;
-}
+const plural = (n, unit) => `${n} ${unit || 'unit'}${n === 1 ? '' : 's'}`;
 
-function amountCell(l, suffix = '') {
-  if (l.kind === 'multiplier') return '';
+function amountCell(l) {
   if (!l.amount) return 'Included';
-  return `${money(l.amount)}${suffix}`;
+  return money(l.amount);
 }
 
-// A choice item named like its section ("Project type" under "Project type") prints
-// just the chosen option, so the heading is not repeated.
-function lineBody(l, groupName = '') {
-  const desc = l.clientDescription || '';
-  const chosen = ['single-select', 'complexity', 'multiplier'].includes(l.kind) && l.detail;
-  const sameAsGroup = l.label === groupName && l.detail;
-  const title = sameAsGroup ? l.detail : chosen ? `${l.label}: ${l.detail}` : l.label;
-  const showDetail = l.detail && !chosen && !sameAsGroup ? l.detail : '';
-  const note = [showDetail, desc].filter(Boolean).join('. ').replace(/\.\./g, '.');
-  return html`<div class="qd-item">${title}</div>${note ? html`<div class="qd-detail">${note}</div>` : ''}`;
+// A chosen option prints as the item itself ("Brochure site", not "Project type:
+// Brochure site"). Per-unit lines show the count and unit price.
+function lineBody(l) {
+  const chosen = l.kind === 'single-select' && l.detail;
+  const title = chosen ? l.detail : l.label;
+  const notes = [];
+  if (l.kind === 'quantity' && l.qty) {
+    const billable = l.qty - (l.included || 0);
+    let q = plural(l.qty, l.unit);
+    if (l.included) q += `, ${l.included} included`;
+    if (l.unitPrice != null && l.amount && billable > 0) q += l.included ? `, ${billable} × ${money(l.unitPrice)}` : ` × ${money(l.unitPrice)}`;
+    notes.push(q);
+  } else if (l.kind === 'multi-select' && l.detail) {
+    notes.push(l.detail);
+  }
+  if (l.clientDescription) notes.push(l.clientDescription);
+  return html`<div class="qd-item">${title}</div>${notes.length ? html`<div class="qd-detail">${notes.join(' · ')}</div>` : ''}`;
 }
 
 export function renderQuoteDoc(quote, business = {}) {
@@ -50,19 +52,20 @@ export function renderQuoteDoc(quote, business = {}) {
   const terms = (quote.terms || []).filter((x) => x.title || x.body);
   const bank = business.bank || {};
   const hasBank = bank.bankName || bank.accountNumber;
+  const timeline = String(quote.timeline?.note || '').trim();
   const fromLines = [business.address, [business.email, business.phone].filter(Boolean).join(' · '), business.website,
     business.vatNumber ? `VAT no. ${business.vatNumber}` : '', business.registrationNumber ? `Reg. no. ${business.registrationNumber}` : '']
     .filter(Boolean).join('\n');
   const toLines = [c.contactName, c.address, [c.email, c.phone].filter(Boolean).join(' · '), c.vatNumber ? `VAT no. ${c.vatNumber}` : ''].filter(Boolean).join('\n');
-  const showSubtotal = adj.length || t.vatRegistered || t.floorApplied;
+  const showSubtotal = adj.length || t.vatRegistered;
+  const scopeBlocks = [['Included', included], ['Not included', excluded], ['Assumptions', assumptions]].filter(([, list]) => list.length);
 
   return html`
   <article class="qdoc">
     <header class="qd-top">
+      <img class="qd-logo" src="${business.logoUrl || DEFAULT_LOGO}" alt="">
       <div class="qd-from">
-        ${business.logoUrl ? html`<img class="qd-logo" src="${business.logoUrl}" alt="">` : ''}
-        <div class="name">${business.name || ''}</div>
-        ${business.tradingName ? html`<div class="trading">${business.tradingName}</div>` : ''}
+        <div class="name">${business.tradingName || business.name || ''}</div>
         <div class="lines">${fromLines}</div>
       </div>
       <div class="qd-meta">
@@ -76,18 +79,15 @@ export function renderQuoteDoc(quote, business = {}) {
       </div>
     </header>
 
-    <hr class="qd-rule">
-
     <section class="qd-to">
       <div>
         <div class="qd-label">Prepared for</div>
         <div class="company">${c.company || c.contactName || 'Client'}</div>
         <div class="lines">${toLines}</div>
       </div>
-      ${quote.timeline?.weeks ? html`<div>
-        <div class="qd-label">Estimated timeline</div>
-        <div class="company">${quote.timeline.weeks} ${quote.timeline.weeks === 1 ? 'week' : 'weeks'}</div>
-        <div class="lines">${quote.timeline.note || 'From receipt of the signed quote and deposit.'}</div>
+      ${timeline ? html`<div>
+        <div class="qd-label">Timeline</div>
+        <div class="company">${timeline}</div>
       </div>` : ''}
     </section>
 
@@ -95,51 +95,40 @@ export function renderQuoteDoc(quote, business = {}) {
     ${quote.summary ? html`<p class="qd-summary">${quote.summary}</p>` : ''}
 
     ${once.length ? html`
-      <h2 class="qd-h">Scope and pricing</h2>
       <table class="qd-items">
         <thead><tr><th>Item</th><th class="num">Amount</th></tr></thead>
-        ${groupLines(once).map((g) => {
-          // Heading and first line share a tbody that may not split, so a heading is never
-          // stranded at the foot of a page; the rest of a long group flows freely.
-          const row = (l) => html`<tr><td>${lineBody(l, g.name)}</td><td class="num">${amountCell(l)}</td></tr>`;
-          return html`<tbody class="qd-group"><tr class="group"><td colspan="2">${g.name}</td></tr>${row(g.lines[0])}</tbody>
-            ${g.lines.length > 1 ? html`<tbody>${g.lines.slice(1).map(row)}</tbody>` : ''}`;
-        })}
+        <tbody>${once.map((l) => html`<tr><td>${lineBody(l)}</td><td class="num">${amountCell(l)}</td></tr>`)}</tbody>
       </table>
       <div class="qd-totals">
         ${showSubtotal ? html`<div class="row"><span class="k">Subtotal</span><span class="v num">${money(t.base)}</span></div>` : ''}
         ${adj.map((a) => html`<div class="row"><span class="k">${a.label} (${percent(a.percent)})</span><span class="v num">${money(a.amount)}</span></div>`)}
-        ${t.floorApplied ? html`<div class="row"><span class="k">Minimum project fee applies</span><span class="v num">${money(t.subtotal)}</span></div>` : ''}
         ${t.vatRegistered ? html`<div class="row"><span class="k">VAT (${percent(t.vatRate)})</span><span class="v num">${money(t.vat)}</span></div>` : ''}
-        <div class="row grand"><span class="k">Total once-off</span><span class="v num">${money(t.total)}</span></div>
+        <div class="row grand"><span class="k">Total</span><span class="v num">${money(t.total)}</span></div>
         <div class="qd-vatnote">${t.vatRegistered ? 'Amounts include VAT where shown.' : 'Not registered for VAT. No VAT is charged.'}</div>
       </div>` : ''}
 
     ${recurring.length ? html`<section class="qd-block">
-      <h2 class="qd-h">Monthly services</h2>
+      <h2 class="qd-h">Monthly</h2>
       <table class="qd-items">
-        <thead><tr><th>Service</th><th class="num">Per month</th></tr></thead>
-        <tbody>${recurring.map((l) => html`<tr><td>${lineBody(l, 'Recurring')}</td><td class="num">${amountCell(l)}</td></tr>`)}</tbody>
+        <tbody>${recurring.map((l) => html`<tr><td>${lineBody(l)}</td><td class="num">${amountCell(l)}</td></tr>`)}</tbody>
       </table>
       <div class="qd-totals">
         ${t.vatRegistered ? html`<div class="row"><span class="k">VAT (${percent(t.vatRate)})</span><span class="v num">${money(t.monthlyVat)}</span></div>` : ''}
-        <div class="row grand"><span class="k">Total per month</span><span class="v num">${money(t.monthly)}</span></div>
+        <div class="row grand"><span class="k">Per month</span><span class="v num">${money(t.monthly)}</span></div>
         <div class="qd-vatnote">Billed monthly from launch.</div>
       </div></section>` : ''}
 
     ${milestones.length ? html`
-      <div class="qd-block">
-        <h2 class="qd-h">Payment schedule</h2>
+      <section class="qd-block">
+        <h2 class="qd-h">Payment</h2>
         <table class="qd-milestones"><tbody>
           ${milestones.map((m) => html`<tr><td class="pct num">${percent(m.percent)}</td><td>${m.label}</td><td class="num">${money(m.amount)}</td></tr>`)}
         </tbody></table>
-      </div>` : ''}
+      </section>` : ''}
 
-    ${included.length || excluded.length || assumptions.length ? html`
-      <div class="qd-scope">
-        ${included.length ? html`<div class="qd-block"><h2 class="qd-h">Included</h2><ul class="qd-list">${included.map((x) => html`<li>${x}</li>`)}</ul></div>` : ''}
-        ${excluded.length ? html`<div class="qd-block"><h2 class="qd-h">Not included</h2><ul class="qd-list">${excluded.map((x) => html`<li>${x}</li>`)}</ul></div>` : ''}
-        ${assumptions.length ? html`<div class="qd-block"><h2 class="qd-h">Assumptions</h2><ul class="qd-list">${assumptions.map((x) => html`<li>${x}</li>`)}</ul></div>` : ''}
+    ${scopeBlocks.length ? html`
+      <div class="qd-scope cols-${scopeBlocks.length}">
+        ${scopeBlocks.map(([title, list]) => html`<div class="qd-block"><h2 class="qd-h">${title}</h2><ul class="qd-list">${list.map((x) => html`<li>${x}</li>`)}</ul></div>`)}
       </div>` : ''}
 
     ${terms.length ? html`
@@ -148,23 +137,24 @@ export function renderQuoteDoc(quote, business = {}) {
         <ol>${terms.map((x) => html`<li><div class="term"><h4>${x.title}</h4><p>${x.body}</p></div></li>`)}</ol>
       </section>` : ''}
 
-    ${hasBank ? html`
-      <section class="qd-bank qd-block">
-        <h2 class="qd-h">Banking details</h2>
-        <dl>
-          ${bank.accountName ? html`<dt>Account name</dt><dd>${bank.accountName}</dd>` : ''}
-          ${bank.bankName ? html`<dt>Bank</dt><dd>${bank.bankName}</dd>` : ''}
-          ${bank.accountNumber ? html`<dt>Account number</dt><dd class="mono">${bank.accountNumber}</dd>` : ''}
-          ${bank.branchCode ? html`<dt>Branch code</dt><dd class="mono">${bank.branchCode}</dd>` : ''}
-          ${bank.accountType ? html`<dt>Account type</dt><dd>${bank.accountType}</dd>` : ''}
-          <dt>Reference</dt><dd class="mono">${quote.number || 'Quote number'}</dd>
-        </dl>
-      </section>` : ''}
-
-    <section class="qd-accept">
-      <h2 class="qd-h">Acceptance</h2>
-      <p>I accept this quote and the terms above on behalf of ${c.company || 'the client'}.</p>
-      <div class="qd-sign"><div>Signature</div><div>Full name</div><div>Date</div></div>
+    <section class="qd-end">
+      ${hasBank ? html`
+        <div class="qd-bank qd-block">
+          <h2 class="qd-h">Banking details</h2>
+          <dl>
+            ${bank.accountName ? html`<dt>Account name</dt><dd>${bank.accountName}</dd>` : ''}
+            ${bank.bankName ? html`<dt>Bank</dt><dd>${bank.bankName}</dd>` : ''}
+            ${bank.accountNumber ? html`<dt>Account number</dt><dd class="mono">${bank.accountNumber}</dd>` : ''}
+            ${bank.branchCode ? html`<dt>Branch code</dt><dd class="mono">${bank.branchCode}</dd>` : ''}
+            ${bank.accountType ? html`<dt>Account type</dt><dd>${bank.accountType}</dd>` : ''}
+            <dt>Reference</dt><dd class="mono">${quote.number || 'Quote number'}</dd>
+          </dl>
+        </div>` : ''}
+      <div class="qd-accept qd-block">
+        <h2 class="qd-h">Acceptance</h2>
+        <p>Signed on behalf of ${c.company || 'the client'} to accept this quote and its terms.</p>
+        <div class="qd-sign"><div>Signature</div><div>Name</div><div>Date</div></div>
+      </div>
     </section>
 
     <footer class="qd-foot">

@@ -2,7 +2,7 @@ import {
   state, create, update, put, remove, now, logQuote, logClient, nextQuoteNumber, statusById, statusByRole, roleOf,
   getVersion, lib, db, collection, getDocs, writeBatch, Timestamp,
 } from '../data/store.js';
-import { compute, defaultSelections, estimateWeeks, itemIdsOf, milestoneAmounts } from '../pricing/engine.js';
+import { compute, defaultSelections, itemIdsOf, milestoneAmounts } from '../pricing/engine.js';
 import { addDays, toDate } from '../lib/format.js';
 import { clone } from '../lib/util.js';
 
@@ -17,15 +17,11 @@ export function clientSnapshot(client) {
 // Recomputes everything derived from selections. Returns the fields to persist.
 export function priced(quote, config) {
   const result = compute(config, quote.selections || {});
-  const qd = state.settings.quoteDefaults || {};
-  const hoursForTimeline = quote.internal?.hoursOverride || result.totals.hours;
-  const weeks = quote.timeline?.override ? quote.timeline.weeks : estimateWeeks(hoursForTimeline, qd.hoursPerWeek);
   return {
     lines: result.lines,
     adjustments: result.adjustments,
     totals: result.totals,
     itemIds: itemIdsOf(quote.selections || {}, config),
-    timeline: { ...(quote.timeline || {}), weeks, override: !!quote.timeline?.override },
   };
 }
 
@@ -53,8 +49,8 @@ export function blankQuote({ clientId = null } = {}) {
     scope,
     payment: { templateId: template?.id || null, milestones: clone(template?.milestones || []) },
     terms: lib('terms').filter((t) => t.defaultOn).map(({ id, title, body }) => ({ id, title, body })),
-    internal: { notes: '', hoursOverride: null },
-    timeline: { weeks: 1, override: false, note: '' },
+    internal: { notes: '' },
+    timeline: { note: '' },
     issueDate: null,
     validUntil: Timestamp.fromDate(addDays(new Date(), Number(qd.validityDays) || 30)),
     revision: 1,

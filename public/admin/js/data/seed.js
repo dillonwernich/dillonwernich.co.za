@@ -1,171 +1,110 @@
 // First-run data, written to Firestore once and then edited in the admin. The pricing
-// defaults are also read by Pricing → Restore defaults to put back deleted sections.
+// defaults are also what Pricing → Reset to defaults puts back.
 
-const h = (amount) => ({ mode: 'hours', amount });
-const r = (rands) => ({ mode: 'fixed', amount: Math.round(rands * 100) });
+const r = (rands) => Math.round(rands * 100);
 
-const opt = (id, label, price, extra = {}) => ({ id, label, clientDescription: '', price, multiplier: null, weight: 1, includes: {}, visible: true, ...extra });
-const levels = (id, simple, medium, complex) => [
-  opt(`${id}-s`, 'Simple', h(simple), { weight: 1 }),
-  opt(`${id}-m`, 'Medium', h(medium), { weight: 2 }),
-  opt(`${id}-c`, 'Complex', h(complex), { weight: 3 }),
-];
+const opt = (id, label, price, extra = {}) => ({ id, label, clientDescription: '', price, includes: {}, visible: true, ...extra });
 
 function item(id, label, kind, fields = {}) {
   return {
     id, label, kind,
-    description: '',
     clientDescription: '',
-    price: r(0),
+    price: 0,
     options: [],
     percent: 0,
-    multiplierTargets: [],
     unit: '',
     includedQty: 0,
-    bands: [],
-    bandMode: 'tiered',
-    complexityWeight: 1,
     recurring: false,
     visible: true,
     showOnQuote: true,
-    placeholder: true,
     default: null,
     ...fields,
   };
 }
 
-const feature = (id, label, clientDescription, s, m, c, weight) =>
-  item(id, label, 'complexity', { clientDescription, options: levels(id, s, m, c), complexityWeight: weight });
-
-export const SEED_HOURLY_RATE = 65000;
+const fixed = (id, label, rands, clientDescription, extra = {}) => item(id, label, 'toggle', { price: r(rands), clientDescription, ...extra });
 
 export function seedPricing() {
   const sections = [
     {
-      id: 'project', name: 'Project type', description: 'Sets the base build and how many pages are included.', visible: true,
+      id: 'project', name: 'Project', description: 'The base build. Each option includes a number of pages.', visible: true,
       items: [
         item('project-type', 'Project type', 'single-select', {
-          clientDescription: 'Core build, project setup, responsive layouts and launch.',
-          complexityWeight: 2,
+          clientDescription: 'Design, build, responsive layouts, testing and launch.',
           default: 'pt-brochure',
           options: [
-            opt('pt-landing', 'Landing page', h(10), { clientDescription: 'Single-page site with one primary call to action.', includes: { pages: 1 } }),
-            opt('pt-brochure', 'Brochure site', h(24), { clientDescription: 'Small informational site.', includes: { pages: 5 }, weight: 1 }),
-            opt('pt-business', 'Business site', h(48), { clientDescription: 'Multi-section business website.', includes: { pages: 10 }, weight: 2 }),
-            opt('pt-webapp', 'Web app', h(120), { clientDescription: 'Browser-based application with signed-in users.', weight: 4 }),
-            opt('pt-android', 'Mobile app: Android', h(160), { clientDescription: 'Native Android application.', weight: 4 }),
-            opt('pt-ios', 'Mobile app: iOS', h(160), { clientDescription: 'Native iOS application.', weight: 4 }),
-            opt('pt-both', 'Mobile app: Android and iOS', h(260), { clientDescription: 'Android and iOS applications.', weight: 5 }),
+            opt('pt-landing', 'Landing page', r(6500), { clientDescription: 'Single-page site with one clear call to action.', includes: { pages: 1 } }),
+            opt('pt-brochure', 'Brochure site', r(12500), { clientDescription: 'Informational site for a small business. Five pages included.', includes: { pages: 5 } }),
+            opt('pt-business', 'Business site', r(22000), { clientDescription: 'Multi-section business website. Ten pages included.', includes: { pages: 10 } }),
+            opt('pt-store', 'Online store', r(35000), { clientDescription: 'Online store with catalogue, cart, checkout and order management.', includes: { pages: 8 } }),
+            opt('pt-webapp', 'Web app', r(55000), { clientDescription: 'Browser-based application with signed-in users.' }),
+            opt('pt-android', 'Mobile app: Android', r(65000), { clientDescription: 'Native Android application.' }),
+            opt('pt-ios', 'Mobile app: iOS', r(65000), { clientDescription: 'Native iOS application.' }),
+            opt('pt-both', 'Mobile app: Android and iOS', r(95000), { clientDescription: 'Android and iOS applications.' }),
           ],
+        }),
+        item('pages', 'Additional pages', 'quantity', {
+          unit: 'page', price: r(1200),
+          clientDescription: 'Pages beyond those included with the project.',
         }),
       ],
     },
     {
-      id: 'platform', name: 'Platform', description: 'Multiplies the build, pages and functionality.', visible: true,
+      id: 'design', name: 'Design', description: 'How much of the look is made from scratch.', visible: true,
       items: [
-        item('platform', 'Platform', 'multiplier', {
-          multiplierTargets: ['project', 'pages', 'functionality'],
-          default: 'pl-static',
-          options: [
-            opt('pl-static', 'Static', r(0), { clientDescription: 'Static site, no server to maintain.', multiplier: 1 }),
-            opt('pl-wordpress', 'WordPress', r(0), { clientDescription: 'WordPress with a managed theme.', multiplier: 1.15 }),
-            opt('pl-custom', 'Custom (Next.js / Firebase)', r(0), { clientDescription: 'Custom stack built for this project.', multiplier: 1.35 }),
-          ],
-        }),
-      ],
-    },
-    {
-      id: 'pages', name: 'Pages', description: 'Pages beyond those included with the project type.', visible: true,
-      items: [
-        item('pages', 'Pages', 'quantity', {
-          unit: 'page',
-          clientDescription: 'Additional pages, designed and built to the agreed layout.',
-          options: [
-            opt('pg-static', 'Static page', h(3), { clientDescription: 'Fixed content page.' }),
-            opt('pg-dynamic', 'Dynamic page', h(5), { clientDescription: 'Content driven by a CMS or database.' }),
-            opt('pg-templated', 'Templated page', h(6), { clientDescription: 'One layout serving many records.' }),
-          ],
-        }),
-      ],
-    },
-    {
-      id: 'functionality', name: 'Functionality', description: 'Feature add-ons, each priced by complexity.', visible: true,
-      items: [
-        feature('contact-form', 'Contact form', 'Contact form with spam protection and email delivery.', 2, 4, 8, 1),
-        feature('booking', 'Booking / calendar', 'Online booking with calendar availability.', 8, 16, 32, 3),
-        feature('blog', 'Blog', 'Blog with categories and article pages.', 6, 12, 20, 2),
-        feature('cms', 'Client-editable CMS', 'Content editing for your team without a developer.', 8, 16, 32, 3),
-        feature('auth', 'User login and roles', 'Accounts, sign-in and role-based access.', 12, 24, 48, 4),
-        feature('payments', 'Payments', 'Online payments through PayFast, Yoco or Stripe.', 8, 16, 32, 4),
-        item('ecommerce', 'E-commerce', 'quantity', {
-          unit: 'product', bandMode: 'flat', complexityWeight: 4,
-          clientDescription: 'Online store with catalogue, cart and checkout.',
-          bands: [
-            { upTo: 25, price: h(24) },
-            { upTo: 100, price: h(36) },
-            { upTo: 500, price: h(56) },
-            { upTo: null, price: h(80) },
-          ],
-        }),
-        feature('search', 'Search and filtering', 'Search with filters across site content.', 6, 12, 24, 2),
-        feature('maps', 'Maps', 'Embedded maps and location display.', 2, 6, 12, 1),
-        feature('chat', 'Live chat', 'Live chat widget connected to your inbox.', 2, 6, 12, 1),
-        feature('api', 'Third-party API integration', 'Integration with an external system.', 8, 16, 32, 3),
-        feature('dashboard', 'Admin dashboard', 'Private dashboard for managing data.', 16, 32, 64, 4),
-        feature('pdf', 'PDF generation', 'Generated PDF documents such as quotes or invoices.', 8, 16, 32, 3),
-        feature('emails', 'Automated emails', 'Transactional emails triggered by events.', 4, 8, 16, 2),
-        feature('multilingual', 'Multilingual', 'Content in more than one language.', 8, 16, 32, 3),
-      ],
-    },
-    {
-      id: 'design', name: 'Design level', description: 'Multiplies the build and pages.', visible: true,
-      items: [
-        item('design', 'Design level', 'multiplier', {
-          multiplierTargets: ['project', 'pages'],
+        item('design', 'Design', 'single-select', {
           default: 'ds-custom',
           options: [
-            opt('ds-template', 'Template-based', r(0), { clientDescription: 'Built on a refined, proven template.', multiplier: 1 }),
-            opt('ds-custom', 'Custom', r(0), { clientDescription: 'Custom design within your existing brand.', multiplier: 1.25 }),
-            opt('ds-premium', 'Premium', r(0), { clientDescription: 'Brand developed from scratch, with motion design.', multiplier: 1.6 }),
+            opt('ds-template', 'Template-based', 0, { clientDescription: 'Built on a refined, proven layout.' }),
+            opt('ds-custom', 'Custom design', r(6500), { clientDescription: 'Custom design within your existing brand.' }),
+            opt('ds-brand', 'Brand and design from scratch', r(15000), { clientDescription: 'Logo, colours, type and a custom design.' }),
           ],
         }),
       ],
     },
     {
-      id: 'content', name: 'Content', description: 'Who supplies words and images.', visible: true,
+      id: 'features', name: 'Features', description: 'Add-ons, each a fixed price.', visible: true,
       items: [
-        item('content', 'Content', 'multi-select', {
-          default: ['ct-client'],
-          options: [
-            opt('ct-client', 'Client supplies all content', r(0), { clientDescription: 'You supply final copy and imagery.' }),
-            opt('ct-copy', 'Copywriting', h(6), { clientDescription: 'Website copy written for you.' }),
-            opt('ct-stock', 'Stock imagery', r(1500), { clientDescription: 'Licensed stock photography.' }),
-            opt('ct-shoot', 'Photoshoot coordination', r(3500), { clientDescription: 'Briefing and coordinating a photographer.' }),
-          ],
-        }),
+        fixed('contact-form', 'Contact form', 1500, 'Contact form with spam protection and email delivery.'),
+        fixed('booking', 'Booking / calendar', 6500, 'Online booking with calendar availability.'),
+        fixed('blog', 'Blog', 4500, 'Blog with categories and article pages.'),
+        fixed('cms', 'Client-editable content', 6000, 'Edit your own content without a developer.'),
+        fixed('auth', 'User accounts', 9500, 'Sign-up, sign-in and role-based access.'),
+        fixed('payments', 'Online payments', 7500, 'Card and EFT payments through PayFast, Yoco or Stripe.'),
+        fixed('search', 'Search and filtering', 4000, 'Search with filters across site content.'),
+        fixed('maps', 'Maps', 1000, 'Embedded maps and directions.'),
+        fixed('chat', 'Live chat', 1500, 'Live chat widget connected to your inbox.'),
+        fixed('api', 'Third-party integration', 8000, 'Integration with an external system or API.'),
+        fixed('dashboard', 'Admin dashboard', 15000, 'Private dashboard for managing your data.'),
+        fixed('pdf', 'PDF generation', 6500, 'Generated documents such as quotes or invoices.'),
+        fixed('emails', 'Automated emails', 3500, 'Emails triggered by events, such as confirmations.'),
+        fixed('multilingual', 'Multilingual', 7500, 'Content in more than one language.'),
       ],
     },
     {
-      id: 'adjustments', name: 'Adjustments', description: 'Applied to the subtotal.', visible: true,
+      id: 'content', name: 'Content', description: 'Words, images and products.', visible: true,
       items: [
-        item('rush', 'Rush fee', 'percentage', { percent: 25, clientDescription: 'Priority scheduling for an accelerated timeline.' }),
+        item('copywriting', 'Copywriting', 'quantity', { unit: 'page', price: r(850), clientDescription: 'Website copy written for you.' }),
+        item('products', 'Product loading', 'quantity', { unit: 'product', price: r(120), clientDescription: 'Products loaded with images, descriptions and pricing.' }),
+        fixed('stock', 'Stock imagery', 1500, 'Licensed stock photography.'),
+        fixed('photoshoot', 'Photoshoot coordination', 3500, 'Briefing and coordinating a photographer.'),
+      ],
+    },
+    {
+      id: 'adjustments', name: 'Adjustments', description: 'Applied to the once-off subtotal.', visible: true,
+      items: [
         item('discount', 'Discount', 'percentage', { percent: -10, clientDescription: 'Discount.' }),
+        item('rush', 'Rush fee', 'percentage', { percent: 25, clientDescription: 'Priority scheduling for a shorter timeline.' }),
       ],
     },
     {
-      id: 'recurring', name: 'Recurring', description: 'Billed monthly, totalled separately on the quote.', visible: true,
+      id: 'monthly', name: 'Monthly', description: 'Billed monthly from launch. Maintenance is the only hourly item.', visible: true,
       items: [
-        item('hosting', 'Hosting', 'toggle', { recurring: true, price: r(250), clientDescription: 'Managed hosting with daily backups.' }),
-        item('domain', 'Domain', 'toggle', { recurring: true, price: r(20), clientDescription: 'Domain registration and renewal.' }),
-        item('ssl', 'SSL certificate', 'toggle', { recurring: true, price: r(0), clientDescription: 'SSL certificate, renewed automatically.' }),
-        item('retainer', 'Maintenance retainer', 'single-select', {
-          recurring: true,
-          clientDescription: 'Updates, security patches and support.',
-          options: [
-            opt('rt-essential', 'Essential', r(1300), { clientDescription: 'Includes 2 support hours a month. Further hours at R 650,00 an hour.' }),
-            opt('rt-standard', 'Standard', r(3000), { clientDescription: 'Includes 5 support hours a month. Further hours at R 650,00 an hour.' }),
-            opt('rt-priority', 'Priority', r(5800), { clientDescription: 'Includes 10 support hours a month with next-business-day response. Further hours at R 650,00 an hour.' }),
-          ],
+        fixed('hosting', 'Hosting', 250, 'Managed hosting with backups and SSL.', { recurring: true }),
+        fixed('domain', 'Domain', 25, 'Domain registration and renewal.', { recurring: true }),
+        item('maintenance', 'Maintenance and support', 'quantity', {
+          unit: 'hour', price: r(650), recurring: true,
+          clientDescription: 'Updates, fixes and support, billed by the hour.',
         }),
       ],
     },
@@ -173,19 +112,17 @@ export function seedPricing() {
 
   return {
     core: {
-      hourlyRate: SEED_HOURLY_RATE,
       currency: 'ZAR',
       locale: 'en-ZA',
       vatRegistered: false,
       vatRate: 15,
-      minimumFee: 650000,
     },
     sections: sections.map((s, si) => ({
       ...s,
       order: si,
       items: s.items.map((it, ii) => ({ ...it, order: ii })),
     })),
-    note: 'Initial configuration with placeholder prices.',
+    note: 'Default pricing.',
   };
 }
 
@@ -228,7 +165,7 @@ export function seedLibraries() {
       { id: 'tm-payment', title: 'Payment', defaultOn: true,
         body: 'Invoices are payable by EFT within 7 days of issue. Work may be paused on overdue invoices.' },
       { id: 'tm-scope', title: 'Changes to scope', defaultOn: true,
-        body: 'Work outside the scope described in this quote is quoted separately or billed at the hourly rate, with your approval before it starts.' },
+        body: 'Work outside the scope described in this quote is quoted separately and approved by you before it starts.' },
       { id: 'tm-content', title: 'Content and approvals', defaultOn: true,
         body: 'You provide content and feedback within 5 working days of each request. Delays on your side move the timeline by the same amount.' },
       { id: 'tm-ip', title: 'Ownership', defaultOn: true,
@@ -238,7 +175,7 @@ export function seedLibraries() {
       { id: 'tm-warranty', title: 'Warranty', defaultOn: true,
         body: 'Defects in the delivered work reported within 30 days of launch are fixed at no charge. New features and changes are not covered.' },
       { id: 'tm-cancel', title: 'Cancellation', defaultOn: false,
-        body: 'If the project is cancelled, work completed to that date is invoiced at the hourly rate. Deposits are non-refundable.' },
+        body: 'If the project is cancelled, work completed to that date is invoiced in proportion to the agreed price. Deposits are non-refundable.' },
       { id: 'tm-popia', title: 'Personal information', defaultOn: true,
         body: 'Personal information shared for this project is processed only to deliver it, in line with the Protection of Personal Information Act.' },
       { id: 'tm-law', title: 'Governing law', defaultOn: false,
@@ -294,8 +231,6 @@ export function seedSettings() {
     quoteDefaults: {
       numberPattern: 'DW-{YYYY}-{0001}',
       validityDays: 30,
-      hoursPerWeek: 20,
-      marginThreshold: 45000,
       defaultPaymentTemplateId: 'pt-50-40-10',
       maxUploadMB: 25,
     },
