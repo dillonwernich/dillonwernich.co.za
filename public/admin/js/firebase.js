@@ -9,6 +9,9 @@ import { getStorage, connectStorageEmulator } from 'https://www.gstatic.com/fire
 // gate; this only lets the UI refuse early instead of showing permission errors.
 export const OWNER_UID = 'U8SYctoCDlVkSrhNYO2c033lrcU2';
 
+// Web config is public by design: every browser that loads the admin receives it. The key
+// only identifies the project; access is enforced by Auth and the rules. Restrict it in the
+// Google Cloud console (see CHECKLIST.md) rather than trying to hide it.
 const config = {
   apiKey: 'AIzaSyDyTl8omzJJV-1ISIS0A34wpgu9aNsAQYQ',
   authDomain: 'dillon-wernich.firebaseapp.com',

@@ -17,6 +17,12 @@ Status on 13 October 2026. Ticked items are already done.
       `service-915315770987@gcp-sa-firebasestorage.iam.gserviceaccount.com` → add role
       **Firebase Rules Firestore Service Agent** → Save.
 - [ ] Set a budget alert: Google Cloud console → Billing → Budgets & alerts → e.g. R 100 a month.
+- [ ] **Restrict the browser API key** (`AIzaSyDy…` in `public/admin/js/firebase.js`):
+      Google Cloud console → APIs & Services → Credentials → *Browser key (auto created by
+      Firebase)* → Application restrictions: Websites, add `https://dillonwernich.co.za/*`,
+      `https://dillon-wernich.web.app/*`, `https://dillon-wernich.firebaseapp.com/*`,
+      `http://localhost/*` and `http://127.0.0.1/*` → API restrictions: Identity Toolkit API,
+      Token Service API, Cloud Firestore API, Cloud Storage for Firebase API → Save.
 - [ ] Optional: Authentication → Settings → Password policy → require 12+ characters.
 
 ## GitHub
@@ -24,6 +30,9 @@ Status on 13 October 2026. Ticked items are already done.
 - [ ] Create the deploy secret: run `firebase init hosting:github` (see `DEPLOY.md`), or add
       `FIREBASE_SERVICE_ACCOUNT_DILLON_WERNICH` by hand. Until then, pushes to `main` fail the
       deploy job; deploy with `firebase deploy --only hosting` instead.
+- [ ] Close the secret scanning alert for the Google API key (Security → Secret scanning):
+      after restricting the key above, close it as **False positive**. It is the public
+      Firebase web key, not a credential, so no rotation or history rewrite is needed.
 - [ ] Repository → Settings → Pages → Source: None. The site no longer comes from GitHub Pages.
 
 ## Registrar (domains.co.za)

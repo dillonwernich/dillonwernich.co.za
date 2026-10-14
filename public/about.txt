@@ -1,6 +1,0 @@
-This favicon was generated using the following font:
-
-- Font Title: Antonio
-- Font Author: undefined
-- Font Source: https://fonts.gstatic.com/s/antonio/v22/gNMbW3NwSYq_9WD34ngK5F8vR8T0PVxx8RtIY2DwSXlM.ttf
-- Font License: undefined)

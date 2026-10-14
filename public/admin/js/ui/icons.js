@@ -1,6 +1,6 @@
 import { raw } from '../lib/html.js';
 
-// One stroke icon set (24px grid, 1.75 stroke) so weight matches Plex at 14px.
+// One stroke icon set (24px grid, 1.75 stroke) so weight matches Geist at 14px.
 const P = {
   dashboard: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
   quotes: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8M16 17H8M10 9H8"/>',
