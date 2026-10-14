@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Web &amp; app development — Dillon Wernich</title>
+<meta name="description" content="Dillon Wernich builds websites, web apps and Android apps for businesses in Durban and across South Africa, and looks after them once they are live." />
+<meta name="author" content="Dillon Wernich" />
+<link rel="canonical" href="https://dillonwernich.co.za/services/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/site.webmanifest">
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://dillonwernich.co.za/services/" />
+<meta property="og:site_name" content="Dillon Wernich" />
+<meta property="og:title" content="Web &amp; app development — Dillon Wernich" />
+<meta property="og:description" content="Websites, web apps and Android apps for businesses, built properly and looked after once they are live." />
+<meta property="og:image" content="https://dillonwernich.co.za/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<style>
+  @font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:400;font-display:swap;
+    src:url("/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2")}
+  @font-face{font-family:"IBM Plex Sans";font-style:italic;font-weight:400;font-display:swap;
+    src:url("/fonts/ibm-plex-sans-latin-400-italic.woff2") format("woff2")}
+  @font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:500;font-display:swap;
+    src:url("/fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2")}
+  @font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:600;font-display:swap;
+    src:url("/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2")}
+  @font-face{font-family:"IBM Plex Sans";font-style:normal;font-weight:700;font-display:swap;
+    src:url("/fonts/ibm-plex-sans-latin-700-normal.woff2") format("woff2")}
+  @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;
+    src:url("/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2")}
+  @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;
+    src:url("/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2")}
+
+  :root{
+    --paper:#F8F9FE;
+    --paper-2:#FFFFFF;
+    --ink:#15171C;
+    --ink-soft:#4E545F;
+    --ink-faint:#6E7480;
+    --line:#DFE3F2;
+    --line-strong:#C4CBE3;
+    --cobalt:#2743D9;
+    --cobalt-deep:#1B2FA4;
+    --cobalt-tint:#EBEDFB;
+    --cobalt-tint-2:#DDE1F8;
+    --ok:#0E8A5F;
+    --maxw:1100px;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--paper);scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--cobalt);color:#fff}
+  a{color:var(--cobalt);text-decoration:none}
+  a:hover{color:var(--cobalt-deep);text-decoration:underline}
+  a:focus-visible{outline:2px solid var(--cobalt);outline-offset:3px;border-radius:2px}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:10px 18px;z-index:100;border-radius:0 0 8px 0}
+  .skip:focus{left:0}
+
+  /* nav */
+  .site-nav{position:sticky;top:0;z-index:50;background:rgba(248,249,254,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{font-weight:700;font-size:18px;letter-spacing:-.01em;color:var(--ink)}
+  .brand:hover{color:var(--cobalt);text-decoration:none}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{color:var(--ink-soft);font-size:15px;font-weight:500}
+  .nav-links a:hover{color:var(--ink);text-decoration:none}
+  .nav-cta{font-family:var(--mono);font-size:13px;color:var(--cobalt)!important;border:1px solid var(--cobalt);padding:7px 14px;border-radius:6px}
+  .nav-cta:hover{background:var(--cobalt);color:#fff!important;text-decoration:none}
+
+  /* hero */
+  .hero{padding:76px 0 64px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--cobalt);margin-bottom:18px}
+  h1{font-weight:700;letter-spacing:-.025em;font-size:clamp(36px,5.2vw,58px);line-height:1.08;max-width:18ch}
+  .hero-sub{margin-top:24px;max-width:60ch;font-size:18px;color:var(--ink-soft)}
+  .hero-sub strong{color:var(--ink);font-weight:600}
+  .hero-row{margin-top:32px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-weight:600;font-size:15.5px;padding:12px 22px;border-radius:8px;border:1px solid var(--ink);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+  .btn:hover{text-decoration:none}
+  .btn-solid{background:var(--ink);color:var(--paper)}
+  .btn-solid:hover{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  .btn-ghost{color:var(--ink);background:transparent}
+  .btn-ghost:hover{border-color:var(--cobalt);color:var(--cobalt)}
+
+  /* sections */
+  .section{padding:80px 0;border-bottom:1px solid var(--line)}
+  .sec-head{margin-bottom:40px;max-width:760px}
+  .eyebrow{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--cobalt);display:block;margin-bottom:12px}
+  h2{font-weight:700;letter-spacing:-.02em;font-size:clamp(28px,4vw,40px);line-height:1.15}
+  .sec-head p{margin-top:14px;color:var(--ink-soft);font-size:17px}
+
+  /* what I build */
+  .build-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  @media(max-width:860px){.build-grid{grid-template-columns:1fr}}
+  .build{background:var(--paper-2);padding:32px 28px}
+  .build h3{font-weight:700;letter-spacing:-.02em;font-size:22px;line-height:1.15}
+  .build .sub{font-family:var(--mono);font-size:12.5px;color:var(--ink-faint);margin-top:6px}
+  .build p{margin-top:16px;color:var(--ink-soft);font-size:16px}
+  .built-list{list-style:none;margin-top:16px}
+  .built-list li{position:relative;padding-left:20px;color:var(--ink-soft);font-size:15.5px;margin-bottom:9px}
+  .built-list li::before{content:"";position:absolute;left:0;top:.6em;width:9px;height:2px;background:var(--cobalt)}
+
+  /* how it works */
+  .how-list{max-width:820px}
+  .how-item{display:grid;grid-template-columns:220px 1fr;gap:26px;padding:26px 0;border-bottom:1px solid var(--line)}
+  .how-item:first-child{padding-top:0}
+  .how-item:last-child{border-bottom:none}
+  @media(max-width:700px){.how-item{grid-template-columns:1fr;gap:6px}}
+  .how-item h3{font-size:18px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+  .how-item p{color:var(--ink-soft);font-size:16px}
+  .how-item p strong{color:var(--ink);font-weight:600}
+
+  /* dark block */
+  .dark-box{background:var(--ink);color:var(--paper);border-radius:14px;padding:44px;display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center}
+  @media(max-width:860px){.dark-box{grid-template-columns:1fr;padding:30px 22px}}
+  .dark-box .eyebrow{color:#9DA9F2}
+  .dark-box h2{color:#fff;font-size:clamp(26px,3.6vw,34px)}
+  .dark-box p{color:#C9CDD9;margin-top:14px;font-size:16.5px;max-width:56ch}
+  .dark-box p strong{color:#fff;font-weight:600}
+  .dark-box .btn{margin-top:22px;background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  .dark-box .btn:hover{background:var(--cobalt-deep);border-color:var(--cobalt-deep);color:#fff}
+  .dark-list{list-style:none}
+  .dark-list li{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:15.5px}
+  .dark-list li:last-child{border-bottom:none}
+  .dark-list .k{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#9DA3B4;align-self:center}
+  .dark-list .v{font-weight:500;color:#fff;text-align:right}
+  .dark-list .v a{color:#fff;font-weight:500}
+  .dark-list .v a:hover{color:#B9C2F7}
+
+  footer{padding:32px 0 44px}
+  .foot-in{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:13px;color:var(--ink-faint)}
+  .foot-in a{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="site-nav" aria-label="Main">
+  <div class="wrap nav-in">
+    <a class="brand" href="/">Dillon Wernich</a>
+    <div class="nav-links">
+      <a href="/">Portfolio</a>
+      <a class="nav-cta" href="/#contact">Get in touch</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">Websites &amp; apps · Durban, South Africa</p>
+    <h1>Websites and apps for businesses, built properly.</h1>
+    <p class="hero-sub">
+      I'm Dillon Wernich, a software developer who builds and runs production systems for a living.
+      Alongside that I take on a small number of projects for businesses that need a
+      <strong>website</strong>, a <strong>web app</strong> or an <strong>Android app</strong>,
+      and want someone who will still be around after it goes live.
+    </p>
+    <div class="hero-row">
+      <a class="btn btn-solid" href="/#contact">Get in touch</a>
+      <a class="btn btn-ghost" href="/#work">See my work</a>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="build">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">What I build</span>
+      <h2>Three kinds of work, one standard.</h2>
+      <p>Whether it is a five-page website or a system your team uses every day, it gets the same
+      care: clean design, fast and secure, and tested before it ships.</p>
+    </div>
+    <div class="build-grid">
+      <div class="build">
+        <h3>Websites</h3>
+        <div class="sub">For businesses that need to be found</div>
+        <p>A professional website that looks right on every device and tells people what you do and
+        how to reach you.</p>
+        <ul class="built-list">
+          <li>Business websites and landing pages</li>
+          <li>Contact forms that go straight to your inbox</li>
+          <li>Domain, email and hosting set up for you</li>
+          <li>Google Search Console and Business Profile, so you show up in search and on Maps</li>
+        </ul>
+      </div>
+      <div class="build">
+        <h3>Web apps</h3>
+        <div class="sub">For teams with a process to run</div>
+        <p>Software your staff log in to and use every day: quoting, ordering, tracking, reporting,
+        whatever your business runs on.</p>
+        <ul class="built-list">
+          <li>Dashboards, portals and internal tools</li>
+          <li>Sign-in, roles and permissions</li>
+          <li>Document generation and email</li>
+          <li>Integrations with the systems you already use</li>
+        </ul>
+      </div>
+      <div class="build">
+        <h3>Android apps</h3>
+        <div class="sub">For work that happens away from a desk</div>
+        <p>Native Android apps for the people in the field, built in Kotlin and backed by a
+        cloud platform that keeps everything in sync.</p>
+        <ul class="built-list">
+          <li>Sales and field-team apps</li>
+          <li>Works offline, syncs when back online</li>
+          <li>Camera, scanning and on-device AI where it helps</li>
+          <li>Private distribution or Play Store release</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">How it works</span>
+      <h2>A straightforward process from first conversation to go-live.</h2>
+    </div>
+    <div class="how-list">
+      <div class="how-item">
+        <h3>We talk about what you need</h3>
+        <p>A short conversation about your business, what you want the website or app to do, and
+        what you already have. From that I put together a clear proposal with a scope and a quote,
+        so you know exactly what you are getting before anything starts.</p>
+      </div>
+      <div class="how-item">
+        <h3>You send me the content</h3>
+        <p>Your text, pictures, logo, and any colours or websites you like the look of. It does not
+        need to be polished. I shape it into the finished product.</p>
+      </div>
+      <div class="how-item">
+        <h3>I build it, then we refine it together</h3>
+        <p>You get a private preview to review on your phone and computer. We go through it
+        together, you tell me what to change, and I refine it until you are happy.</p>
+      </div>
+      <div class="how-item">
+        <h3>Go-live and after</h3>
+        <p>I publish it, set up what is needed for people to find it, and hand over anything you
+        need to run it. If you want changes or new features later, I am a message away and will
+        always give you an estimate before I start.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contact" style="border-bottom:none">
+  <div class="wrap">
+    <div class="dark-box">
+      <div>
+        <span class="eyebrow">Get in touch</span>
+        <h2>Tell me about your project.</h2>
+        <p>Send me a message with a few lines about your business and what you have in mind.
+        I will come back to you with questions and a proposal, with no obligation.</p>
+        <a class="btn" href="/#contact">Send me a message</a>
+      </div>
+      <ul class="dark-list">
+        <li><span class="k">Email</span><span class="v"><a href="mailto:dillon.wernich@icloud.com">dillon.wernich@icloud.com</a></span></li>
+        <li><span class="k">Phone</span><span class="v"><a href="tel:+27738167717">+27 73 816 7717</a></span></li>
+        <li><span class="k">LinkedIn</span><span class="v"><a href="https://www.linkedin.com/in/dillon-wernich/" target="_blank" rel="noopener">dillon-wernich</a></span></li>
+        <li><span class="k">Based in</span><span class="v">Durban, South Africa</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <span>© <span id="year"></span> Dillon Wernich · <a href="/privacy/">Privacy</a></span>
+    <span>
+      <a href="https://www.linkedin.com/in/dillon-wernich/" target="_blank" rel="noopener">LinkedIn</a>
+      &nbsp;·&nbsp;
+      <a href="https://github.com/dillonwernich" target="_blank" rel="noopener">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:dillon.wernich@icloud.com">dillon.wernich@icloud.com</a>
+    </span>
+  </div>
+</footer>
+
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

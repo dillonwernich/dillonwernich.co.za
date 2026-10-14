@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /proposals/
 Allow: /
 
 Sitemap: https://dillonwernich.co.za/sitemap.xml

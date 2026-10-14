@@ -273,14 +273,6 @@
     padding:42px;margin-top:32px;
   }
   .case:first-of-type{margin-top:0}
-  .case-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
-  .chip{
-    font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;
-    padding:4px 11px;border-radius:6px;border:1px solid var(--line-strong);color:var(--ink-soft);
-  }
-  .chip-live{border-color:rgba(14,138,95,.4);color:var(--ok)}
-  .chip-dev{border-color:rgba(154,107,0,.45);color:#8A5F00;background:#FBF3E2}
-  .chip-nda{border-color:var(--cobalt-tint-2);background:var(--cobalt-tint);color:var(--cobalt-deep)}
   .case-h{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .case-h img{height:56px;width:auto;object-fit:contain}
   .case-h img.short{height:28px}
@@ -361,6 +353,29 @@
   .org-logo{height:36px;width:auto;vertical-align:middle;margin-right:10px;object-fit:contain}
   .xp-what p{margin-top:9px;color:var(--ink-soft);font-size:15.5px}
 
+  /* dark block */
+  .dark-box{
+    background:var(--ink);color:var(--paper);border-radius:14px;padding:44px;
+    display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;
+  }
+  @media(max-width:860px){.dark-box{grid-template-columns:1fr;padding:30px 22px}}
+  .dark-box .eyebrow{color:#9DA9F2}
+  .dark-box h2{color:#fff;font-size:clamp(26px,3.6vw,34px)}
+  .dark-box p{color:#C9CDD9;margin-top:14px;font-size:16.5px;max-width:56ch}
+  .dark-box p strong{color:#fff;font-weight:600}
+  .dark-box .btn{margin-top:22px;background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  .dark-box .btn:hover{background:var(--cobalt-deep);border-color:var(--cobalt-deep);color:#fff}
+  .dark-list{list-style:none}
+  .dark-list li{
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:15.5px;
+  }
+  .dark-list li:last-child{border-bottom:none}
+  .dark-list .k{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#9DA3B4;align-self:center}
+  .dark-list .v{font-weight:500;color:#fff;text-align:right}
+  .dark-list .v a{color:#fff;font-weight:500}
+  .dark-list .v a:hover{color:#B9C2F7}
+
   /* contact */
   .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
   @media(max-width:860px){.contact-grid{grid-template-columns:1fr}}
@@ -409,6 +424,7 @@
       <a href="#how">How I work</a>
       <a href="#about">About</a>
       <a href="#experience">Experience</a>
+      <a href="/services/">Services</a>
       <a class="nav-cta" href="#contact">Get in touch</a>
     </div>
   </div>
@@ -485,15 +501,11 @@
 
     <!-- Xpanda -->
     <article class="case">
-      <div class="case-top">
-        <span class="chip chip-live">● In production</span>
-        <span class="chip chip-nda">Internal system, code under NDA</span>
-      </div>
       <div class="case-h">
         <img src="assets/xpanda.png" alt="Xpanda Security logo" loading="lazy" />
         <h3>Xpanda Security sales platform</h3>
       </div>
-      <p class="role-line">Sole developer · Xpanda Security (Argent Industrial Group) · Jan 2025 to 2026 · Delivered</p>
+      <p class="role-line">Sole developer · Xpanda Security (Argent Industrial Group) · Jan 2025 to 2026 · In production · Internal system, code under NDA</p>
 
       <div class="case-grid">
         <div class="case-body">
@@ -570,15 +582,11 @@
 
     <!-- American Shutters -->
     <article class="case">
-      <div class="case-top">
-        <span class="chip chip-dev">◐ In development</span>
-        <span class="chip chip-nda">Internal system, code under NDA</span>
-      </div>
       <div class="case-h">
         <img src="assets/american.png" alt="American Shutters logo" class="short" loading="lazy" />
         <h3>American Shutters sales platform</h3>
       </div>
-      <p class="role-line">Sole developer · American Shutters (Argent Industrial Group) · 2026 to present</p>
+      <p class="role-line">Sole developer · American Shutters (Argent Industrial Group) · 2026 to present · In development · Internal system, code under NDA</p>
 
       <div class="case-grid">
         <div class="case-body">
@@ -749,6 +757,27 @@
           <p>Applied AI and data-driven problem solving alongside full-stack development work.</p>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="dark-box">
+      <div>
+        <span class="eyebrow">Websites &amp; apps</span>
+        <h2>Need a website or an app for your business?</h2>
+        <p>Alongside my full-time work I take on a small number of projects for businesses that need
+        a <strong>website</strong>, a <strong>web app</strong> or an <strong>Android app</strong> built
+        properly and looked after once it is live.</p>
+        <a class="btn" href="/services/">What I can build for you</a>
+      </div>
+      <ul class="dark-list">
+        <li><span class="k">Websites</span><span class="v">Business sites, landing pages, contact forms</span></li>
+        <li><span class="k">Web apps</span><span class="v">Dashboards, portals, internal tools</span></li>
+        <li><span class="k">Android</span><span class="v">Native apps in Kotlin</span></li>
+        <li><span class="k">After launch</span><span class="v">Hosting, updates and support</span></li>
+      </ul>
     </div>
   </div>
 </section>
