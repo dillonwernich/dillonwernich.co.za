@@ -1,52 +1,32 @@
 # Deploying dillonwernich.co.za
 
 The site is served by Firebase Hosting from the `dillon-wernich` project. Everything under
-`public/` is published: the portfolio at `/` and the private admin at `/admin/`. Nothing outside
-`public/` (this file, rules, tests, the admin spec) is served.
+`public/` is published; nothing outside it is served. There is no build step and no backend.
 
 | Path | What it is |
 |---|---|
-| `public/` | Portfolio pages and the admin (`public/admin/`), no build step |
-| `firebase.json` | Hosting config, headers, admin rewrite, emulator ports |
-| `firestore.rules`, `storage.rules` | Security rules; owner UID is set once at the top of each |
-| `tests/rules.test.js` | Rules tests, run against the emulators |
+| `public/` | The portfolio, privacy policy, 404 page and the static proposal page |
+| `firebase.json` | Hosting config: headers, redirects (including `/services/` → synthik.co.za) |
+| `email-signature.html` | Email signature, not deployed |
 
 ## Run locally
 
-Needs Node 20+, the Firebase CLI (`npm install -g firebase-tools`) and Java 21 for the
-emulators.
-
 ```sh
-npm install                      # rules-test tooling only
-firebase emulators:start         # Hosting, Auth, Firestore and Storage
-node tests/emulator-user.js      # creates the owner account in the Auth emulator
+firebase emulators:start --only hosting   # http://127.0.0.1:5000
 ```
 
-Open http://127.0.0.1:5000/admin/ and sign in with the emulator account in
-`tests/fixtures/emulator-owner.json`. On `localhost`/`127.0.0.1` the admin talks to the
-emulators only; it never touches production data. The first sign-in seeds pricing, libraries
-and settings.
-
-The Hosting emulator does not apply the `headers` from `firebase.json` (cache, CSP). Check those
-on a preview channel instead.
-
-## Test the security rules
-
-```sh
-npm run test:rules
-```
-
-Starts the Firestore and Storage emulators, runs `tests/rules.test.js` and stops them.
+The Hosting emulator does not apply the `headers` from `firebase.json`; check those on a preview channel.
 
 ## Deploy
 
 Deploys are manual; pushing to GitHub deploys nothing.
 
 ```sh
-firebase deploy --only hosting --account dillon.wernich@gmail.com                # live
 firebase hosting:channel:deploy preview --expires 1d --account dillon.wernich@gmail.com   # temporary URL to check first
-firebase deploy --only firestore,storage --account dillon.wernich@gmail.com      # rules and indexes, by hand
+firebase deploy --only hosting --account dillon.wernich@gmail.com                         # live
 ```
+
+The contact form posts to Web3Forms with the key in `public/index.html`; it delivers to dillon.wernich@gmail.com.
 
 ## Custom domain
 
