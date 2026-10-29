@@ -13,6 +13,11 @@
         "type": 301
       },
       {
+        "source": "/services{,/**}",
+        "destination": "https://synthik.co.za/services/",
+        "type": 301
+      },
+      {
         "source": "/privacy/index.html",
         "destination": "/privacy/",
         "type": 301

@@ -219,7 +219,7 @@ export function seedSettings() {
       name: 'Dillon Wernich',
       tradingName: '',
       address: 'Durban\nKwaZulu-Natal',
-      email: 'info@dillonwernich.co.za',
+      email: 'dillon.wernich@gmail.com',
       phone: '+27 73 816 7717',
       website: 'dillonwernich.co.za',
       vatNumber: '',
