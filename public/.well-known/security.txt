@@ -1,0 +1,4 @@
+Contact: mailto:dillon.wernich@gmail.com
+Expires: 2027-10-29T00:00:00Z
+Preferred-Languages: en
+Canonical: https://dillonwernich.co.za/.well-known/security.txt

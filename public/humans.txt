@@ -1,0 +1,8 @@
+/* TEAM */
+Software developer: Dillon Wernich
+Location: Durban, KwaZulu-Natal, South Africa
+
+/* SITE */
+Built by hand: HTML, CSS, JavaScript
+Type: Geist Sans, Geist Mono
+Hosting: Firebase Hosting

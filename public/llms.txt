@@ -1,0 +1,11 @@
+# Dillon Wernich
+
+> Portfolio of Dillon Wernich, a software developer in Durban, South Africa. Client work for websites, web apps and iOS & Android apps is done through his studio, Synthik (https://synthik.co.za).
+
+## Pages
+- [Portfolio](https://dillonwernich.co.za/): work, stack, experience and contact
+- [Privacy policy](https://dillonwernich.co.za/privacy/): how the contact form handles personal information
+
+## Contact
+- Email: dillon.wernich@gmail.com
+- Location: Durban, KwaZulu-Natal, South Africa
