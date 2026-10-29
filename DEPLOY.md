@@ -10,7 +10,6 @@ The site is served by Firebase Hosting from the `dillon-wernich` project. Everyt
 | `firebase.json` | Hosting config, headers, admin rewrite, emulator ports |
 | `firestore.rules`, `storage.rules` | Security rules; owner UID is set once at the top of each |
 | `tests/rules.test.js` | Rules tests, run against the emulators |
-| `.github/workflows/deploy.yml` | Deploys Hosting on push to `main` |
 
 ## Run locally
 
@@ -41,28 +40,13 @@ Starts the Firestore and Storage emulators, runs `tests/rules.test.js` and stops
 
 ## Deploy
 
-Pushing to `main` deploys Hosting through `.github/workflows/deploy.yml`. Rules are deployed by
-hand, because a rules mistake should never ship by accident:
+Deploys are manual; pushing to GitHub deploys nothing.
 
 ```sh
-firebase login:use dillon.wernich@gmail.com            # the personal account, not the Argent one
-firebase deploy --only firestore,storage               # rules and indexes
-firebase hosting:channel:deploy preview --expires 1d   # temporary URL to check first
-firebase deploy --only hosting                         # live
+firebase deploy --only hosting --account dillon.wernich@gmail.com                # live
+firebase hosting:channel:deploy preview --expires 1d --account dillon.wernich@gmail.com   # temporary URL to check first
+firebase deploy --only firestore,storage --account dillon.wernich@gmail.com      # rules and indexes, by hand
 ```
-
-## GitHub Actions secret
-
-The workflow needs a repository secret named `FIREBASE_SERVICE_ACCOUNT_DILLON_WERNICH` holding
-the JSON key of a service account with the Firebase Hosting Admin role on `dillon-wernich`.
-The quickest way to create both:
-
-```sh
-firebase init hosting:github
-```
-
-Choose this repository, answer "No" to a build script and "No" to overwriting `firebase.json`.
-It writes its own workflow files; delete them and keep `deploy.yml`, which uses the same secret.
 
 ## Custom domain
 
